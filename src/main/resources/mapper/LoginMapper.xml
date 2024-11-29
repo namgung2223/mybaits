@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kovi.kovinewinterface.domain.login.mapper.LoginMapper">
+
+    <select id="findMemberById" parameterType="String" resultType="MemberDto">
+        SELECT
+            id,
+            pwd,
+            name,
+            SHA_CHK,
+            com_name,
+            name,
+            [change]
+            FROM
+            Member_Info
+        WHERE
+        id = #{id}
+        AND ISNULL(secede,'') = ''
+    </select>
+
+
+    <update id="saveLoginInfoById" parameterType="String">
+        MERGE INTO doore_login D
+        USING (
+            #{value} as id
+        )U
+        ON
+        D.id = U.id
+        WHEN MATCHED THEN
+        UPDATE
+        SET
+            D.ldate = getdate()
+        WHEN NOT MATCHED THEN
+        INSERT
+        (
+            id,
+            ldate
+        )VALUES (
+            U.id
+            getdate()
+        )
+    </update>
+
+    <insert id="saveUserChk" parameterType="MemberDto">
+        INSERT
+        INTO
+            userchk (
+            userid,
+            act,
+            ip
+        )
+        VALUES (
+            #{memberId},
+            'login',
+            #{ip}
+        )
+    </insert>
+    
+    <select id="demoCheck" parameterType="String" resultType="java.time.LocalDateTime">
+        SELECT
+            TOP 1 end_date
+        FROM
+            (
+                SELECT
+                    end_date
+                FROM
+                    product_info
+                WHERE
+                    member_id = #{value}
+                UNION ALL
+                SELECT
+                    end_date
+                FROM
+                    product_demo
+                WHERE
+                    member_id = #{value}
+                  AND service_name NOT IN (
+                    SELECT
+                        service_name
+                    FROM
+                        product_info
+                    WHERE
+                        member_id =#{value})
+            ) a
+    </select>
+</mapper>
