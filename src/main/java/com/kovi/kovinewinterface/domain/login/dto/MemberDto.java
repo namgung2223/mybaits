@@ -8,6 +8,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class MemberDto {
+    @JsonProperty("PRDT_CD")
+    private String prdtCd;
     private String ip;
 
     private String memberId;
@@ -17,5 +19,7 @@ public class MemberDto {
     @JsonProperty("com_name")
     private String comName;
     private String name;
+    @JsonProperty("event_join")
+    private String eventJoin;
     private String change;
 }

@@ -13,6 +13,11 @@ java {
     sourceCompatibility = '17'
 }
 
+bootWar {
+    archiveBaseName = "koviNewInterface"
+    archiveFileName = "koviNewInterface.war"
+}
+
 repositories {
     mavenCentral()
 }
@@ -26,43 +31,27 @@ configurations {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    // RestTemplate is deprecated. Use WebClient
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    // mybatis
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.0'
-    //log4j
-    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4:1.16'
-    //json
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // P6Spy 의존성 추가
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
-
-    //simple JSONObject -  https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
-    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
-
-    //JSONParser, JSONObject설정
-    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
-
-    // Commons-io https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-
-    /*ftp*/
-    implementation 'commons-net:commons-net:3.6'
+    implementation 'org.springframework:spring-oxm:6.0.6'  // JAXB 지원을 위한 의존성
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'  // JAXB API 의존성
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.5'  // JAXB 런타임 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'  // WebClient 대신 사용
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.0'  // MyBatis
+    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4:1.16'  // JDBC 로깅
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'  // JSON 처리
+    compileOnly 'org.projectlombok:lombok'  // Lombok
+    annotationProcessor 'org.projectlombok:lombok'  // Lombok annotation processing
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'  // Spring Configuration Processor
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'  // SQL Server JDBC 드라이버
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'  // 테스트
+    testImplementation 'org.springframework.security:spring-security-test'  // Spring Security 테스트
+    testCompileOnly 'org.projectlombok:lombok'  // Lombok for testing
+    testAnnotationProcessor 'org.projectlombok:lombok'  // Lombok annotation processor for testing
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'  // P6Spy
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'  // JSON Simple
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'  // Commons IO
+    implementation 'commons-net:commons-net:3.6'  // Commons Net (FTP)
 }
+
 
 test {
     useJUnitPlatform()

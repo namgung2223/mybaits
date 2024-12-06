@@ -4,11 +4,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -17,6 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -484,4 +490,87 @@ public class FileUtil {
 			throw new UnsupportedOperationException("네트워크 상태가 좋지 않아서 실패했습니다.");
 		}
 	}
+
+	public static FTPClient FTPConnection(String ftpId, String ftpPw, String ftpIp, int ftpPort) {
+
+		FTPClient client = new FTPClient();
+
+		try {
+			client.setControlEncoding("EUC_KR");
+			client.connect(ftpIp, ftpPort);
+			int resultCode = client.getReplyCode();
+
+			// 접속시 에러가 나오면 콘솔에 에러 메시지를 표시하고 프로그램을 종료한다.
+			if (!FTPReply.isPositiveCompletion(resultCode)) {
+				throw new RuntimeException("client 연결 에러발생");
+			} else {
+				// 파일 전송간 접속 딜레이 설정 (1ms 단위기 때문에 1000이면 1초)
+				client.setSoTimeout(1000);
+				// 로그인을 한다.
+				if (!client.login(ftpId, ftpPw)) {
+					// 로그인을 실패하면 프로그램을 종료한다.
+					client.logout();
+					throw new RuntimeException("client 로그인 실패");
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		return client;
+	}
+
+	/**
+	 * FTP 업로드(단일) - 파일 객체 가져오는 방법
+	 * @param client
+	 * @param path
+	 * @param fileNm
+	 * @param request
+	 */
+	public static void FTPFileUpload2(FTPClient client,String path,String fileName,File file, HttpServletRequest request) {
+
+		FileInputStream fis = null;
+
+		try {
+			fis = new FileInputStream(file);
+			client.enterLocalPassiveMode();
+			client.setFileType(FTP.BINARY_FILE_TYPE);
+			// 폴더 이동 및 폴더가 없을시 폴더생성
+			boolean isExists = client.changeWorkingDirectory(path);
+			if (!isExists) {
+				client.makeDirectory(path);
+				client.changeWorkingDirectory(path);
+			}
+
+			//전송 및 성공여부 체크
+			boolean isSuccess = client.storeFile(fileName, fis);
+			if (isSuccess) {
+				logger.info("FTP File upload success.");
+			} else {
+				throw new IllegalStateException("파일전송 실패 에러발생");
+			}
+		} catch (Exception ex) {
+			ex.getMessage();
+			throw new IllegalStateException("에러가 발생하였습니다.");
+		} finally {
+			IOUtils.closeQuietly(fis);
+			try {
+				if (client != null && client.isConnected()) {
+					client.logout();
+					client.disconnect();
+				}
+			} catch (Exception e) {
+				e.getMessage();
+				throw new IllegalStateException("에러가 발생하였습니다.");
+			}
+		}
+	}
+
+	public static String getToday(String format) {
+		if (StringUtils.isEmpty(format))
+			return null;
+
+		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.KOREA);
+		return sdf.format(new Date());
+	}
+
 }// Finish this class

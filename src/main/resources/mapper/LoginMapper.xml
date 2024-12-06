@@ -7,12 +7,13 @@
 
     <select id="findMemberById" parameterType="String" resultType="MemberDto">
         SELECT
-            id,
+            id as memberId,
             pwd,
             name,
             SHA_CHK,
             com_name,
             name,
+            event_join,
             [change]
             FROM
             Member_Info
@@ -25,23 +26,24 @@
     <update id="saveLoginInfoById" parameterType="String">
         MERGE INTO doore_login D
         USING (
+        SELECT
             #{value} as id
         )U
         ON
-        D.id = U.id
+            D.id = U.id
         WHEN MATCHED THEN
-        UPDATE
-        SET
-            D.ldate = getdate()
+            UPDATE
+            SET
+                D.ldate = getdate()
         WHEN NOT MATCHED THEN
-        INSERT
-        (
-            id,
-            ldate
-        )VALUES (
-            U.id
-            getdate()
-        )
+            INSERT
+            (
+                id,
+                ldate
+            )VALUES (
+                U.id,
+                getdate()
+            );
     </update>
 
     <insert id="saveUserChk" parameterType="MemberDto">
@@ -86,4 +88,104 @@
                         member_id =#{value})
             ) a
     </select>
+
+    <select id="findUsingProductsById" parameterType="String" resultType="ProductUseDto">
+        --product_info 리스트 가져오기
+        SELECT
+            service_name AS prdtCd,
+            service_status AS serviceStatus,
+            service_type AS priceType,
+            month_offline AS offline,
+            stop_date AS pauseDt,
+            join_date AS startDt
+        FROM
+            product_info
+        WHERE
+            member_id = #{value}
+          AND service_status = 'A'
+          AND service_name IN ('A', 'K', 'B', 'I', 'R', 'H', 'C', 'N', 'T', 'S')
+        UNION
+        --product_demo 리스트 가져오기
+        SELECT
+            service_name AS prdtCd,
+            service_status AS serviceStatus,
+            service_type AS priceType,
+            month_offline AS offline,
+            stop_date AS pauseDt,
+            join_date AS startDt
+        FROM
+            product_demo
+        WHERE
+            member_id = #{value}
+          AND service_status = 'A'
+          AND service_name IN ('A', 'K', 'B', 'I', 'R', 'H', 'C', 'N', 'T', 'S')
+        UNION
+        --Product_USE 리스트 가져오기
+        SELECT
+            PM.PRDT_CD AS prdtCd,
+            PU.SERVICE_STATUS AS serviceStatus,
+            PM.PRICE_TYPE AS priceType,
+            PU.OFFLINE AS offline,
+            PU.PAUSE_DT AS pauseDt,
+            PU.START_DT AS startDt
+        FROM
+            Product_USE PU
+                INNER JOIN
+            PRODUCT_MGT PM
+            ON PM.PRDT_KEY = PU.PRDT_KEY
+        WHERE
+            PU.member_id = #{value}
+          AND PM.PRDT_CD NOT IN ('P','S64E')
+    </select>
+    
+    <select id="findXmlInfoByPrdtCd" parameterType="ProductUseDto" resultType="ProgramXmlInfoDto">
+        SELECT
+                programNm,
+                type,
+                exeName,
+                installUrl,
+                majorVer,
+                fullPackUser,
+                prdtCd,
+                arUser,
+                regDate
+        FROM Program_xml_info
+        WHERE prdtCd in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item.prdtCd}
+        </foreach>
+    </select>
+
+    <select id="findKHRById" parameterType="String" resultType="ProductKhrInfo">
+        SELECT
+            prod_stat AS prodStat,
+            offline,
+            CASE
+                WHEN DATEDIFF(DAY, GETDATE(), temp_date) > 24 THEN 'n'
+                ELSE 'y'
+                END AS tempDateStatus
+        FROM
+            Product_KHR
+        WHERE
+            member_id = #{value};
+    </select>
+
+    <insert id="saveLauncherHashMap" parameterType="HashMapDto">
+        INSERT INTO Launcher_Hashmap_Table
+        (
+             hashMap_key,
+             id
+         )
+        values (
+           #{hashMap},
+           #{memberId}
+        )
+    </insert>
+
+    <delete id="deleteLauncher">
+        delete from
+            Launcher_Hashmap_Table
+        where
+            date <![CDATA[<]]> DATEADD(MINUTE, -1, SYSDATETIME())
+    </delete>
 </mapper>
