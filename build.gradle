@@ -50,6 +50,34 @@ dependencies {
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'  // JSON Simple
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'  // Commons IO
     implementation 'commons-net:commons-net:3.6'  // Commons Net (FTP)
+      // Excel read/write
+    implementation 'org.apache.poi:poi:3.17'
+    implementation 'org.apache.poi:poi-ooxml:3.17'
+
+     // 신규 추가
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.8.1'
+    implementation 'com.googlecode.json-simple:json-simple:1.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.8.11'
+
+    implementation 'net.sf.json-lib:json-lib:2.4:jdk15'
+        
+    // json-lib는 commons-* 라이브러리도 필요
+    implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    implementation 'commons-collections:commons-collections:3.2.2'
+    implementation 'commons-lang:commons-lang:2.6'
+    implementation 'commons-logging:commons-logging:1.2'
+    implementation 'net.sf.ezmorph:ezmorph:1.0.6'
+
+
+
+
+
+
+
+
+
+
+
 }
 
 

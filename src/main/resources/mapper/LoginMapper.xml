@@ -158,10 +158,10 @@
 
     <select id="findKHRById" parameterType="String" resultType="ProductKhrInfo">
         SELECT
-            prod_stat AS prodStat,
+            LTRIM(RTRIM(prod_stat)) AS prodStat,
             offline,
             CASE
-                WHEN DATEDIFF(DAY, GETDATE(), temp_date) > 24 THEN 'n'
+                WHEN DATEDIFF(HOUR, temp_date, GETDATE()) > 24 THEN 'n'
                 ELSE 'y'
                 END AS tempDateStatus
         FROM

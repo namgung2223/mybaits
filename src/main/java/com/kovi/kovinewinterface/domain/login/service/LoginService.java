@@ -72,14 +72,14 @@ public class LoginService {
             ProductUseDto productUseDto = new ProductUseDto("R");
             usingProductsById.add(productUseDto);
         }else{
-        //사용중 프로그램 xml정보 조회
+        //사용중 프로그램 정보 조회
             usingProductsById = loginMapper.findUsingProductsById(memberDto.getMemberId());
         }
 
         //정지일이 현재일보다 이전일 경우 사용 정지 상태이므로 사용 리스트에서 제거
         usingProductsById.removeIf(product -> "Z".equals(product.getPriceType()) && product.getPauseDt().isBefore(LocalDate.now()));
 
-        //Kitchen 프로그램 사용중일 시 키친2.5도 포함
+        //Kitchen 프로그램 사용중일 시 키친2.5도 포함 -> 인트라넷에서는 K가 2.5로 I가 키친으로 되어 있음 기존 로직 수정 않기로 함
         boolean haveProgramKitchen = usingProductsById.stream().anyMatch(x -> "K".equals(x.getPrdtCd()));
         if(haveProgramKitchen){
             ProductUseDto productUseDto = new ProductUseDto("I");
@@ -91,6 +91,8 @@ public class LoginService {
         if(xmlInfoByPrdtCd != null){
             if("A".equals(xmlInfoByPrdtCd.getProdStat()) || "y".equals(xmlInfoByPrdtCd.getTempDateStatus())){
                 ProductUseDto productUseDto = new ProductUseDto("KHR");
+                productUseDto.setServiceStatus(xmlInfoByPrdtCd.getProdStat());
+
                 usingProductsById.add(productUseDto);
             }
         }
@@ -100,9 +102,9 @@ public class LoginService {
             throw new IllegalStateException("해당 계정은 현재 프로그램 사용이 제한되어 있습니다. 홈페이지 마이페이지에서 확인하시거나 고객지원센터(1644-4932)로 문의 바랍니다.");
         }
 
-        //product_info, product_demo , product_use 사용중인 프로그램 조회
+        //product_info, product_demo , product_use 사용중인 프로그램  xml 정보 조회
         programXmlInfoDtos = loginMapper.findXmlInfoByPrdtCd(usingProductsById);
-        //fullpackuser set
+        //fullpackuser 설정
         loginUtils.mapServiceTypeToPrograms(programXmlInfoDtos,usingProductsById);
         //xml파일생성
         loginUtils.createXmlFile(request,memberDto,programXmlInfoDtos);
